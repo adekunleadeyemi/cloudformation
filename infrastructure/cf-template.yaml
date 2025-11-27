@@ -1,0 +1,159 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Parent Stack
+Parameters:
+  # Transit Gateway parameters
+  TransitGatewayName:
+    Type: String
+
+  AmazonSideAsn:
+    Type: Number
+    Default: 64512
+  
+  AutoAcceptSharedAttachments:
+    Type: String
+    AllowedValues: 
+      - "true"
+      - "false"
+    Default: "true"
+  
+  DefaultRouteTableAssociation:
+    Type: String
+    AllowedValues: 
+      - "true"
+      - "false"
+    Default: "true"
+  
+  DefaultRouteTablePropagation:
+    Type: String
+    AllowedValues: 
+      - "true"
+      - "false"
+    Default: "true"
+  
+  DnsSupport:
+    Type: String
+    AllowedValues: 
+      - "true"
+      - "false"
+    Default: "true"
+  
+  VpnEcmpSupport:
+    Type: String
+    AllowedValues: 
+      - "true"
+      - "false"
+    Default: "false"
+  
+  MulticastSupport:
+    Type: String
+    AllowedValues: 
+      - "true"
+      - "false"
+    Default: "false"
+  
+  CoreRtName:
+    Type: String
+    Default: core
+  
+  SpokeRtName:
+    Type: String
+    Default: spoke
+  
+  VpcAttachmentsJson:
+    Type: String
+    Default: '[]'
+    
+  EnableRamShare:
+    Type: String
+    AllowedValues: 
+      - "true"
+      - "false"
+    Default: "false"
+  
+  RamShareName:
+    Type: String
+    Default: 'tgw-share'
+  
+  RamPrincipals:
+    Type: CommaDelimitedList
+    Default: ''
+  
+  # tags
+
+  Domain:
+    Type: String
+    Default: 'test'
+  
+  Division:
+    Type: String
+    Default: ade
+  
+  Program:
+    Type: String
+    Default: testing
+  
+  Team:
+    Type: String
+    Default: sre
+  
+  Environment:
+    Type: String
+    Default: dev
+
+  
+Conditions:
+  HasNameOverride: !Not [!Equals [!Ref TransitGatewayName, '']]
+
+Resources:
+  TransitGatewayStack: 
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://cloudformation-module-template.s3.eu-west-2.amazonaws.com/infrastructure-templates/modules/transit-gateway/transit-gateway-template.yaml" 
+      Parameters: 
+        TransitGatewayName: !If
+          - HasNameOverride
+          - !Ref TransitGatewayName
+          - !Sub ${Environment}-transit-gateway 
+        AmazonSideAsn: !Ref AmazonSideAsn 
+        AutoAcceptSharedAttachments: !Ref AutoAcceptSharedAttachments 
+        DefaultRouteTableAssociation: !Ref DefaultRouteTableAssociation 
+        DefaultRouteTablePropagation: !Ref DefaultRouteTablePropagation 
+        DnsSupport: !Ref DnsSupport 
+        VpnEcmpSupport: !Ref VpnEcmpSupport 
+        MulticastSupport: !Ref MulticastSupport 
+        CoreRtName: !Ref CoreRtName 
+        SpokeRtName: !Ref SpokeRtName 
+        EnableRamShare: !Ref EnableRamShare 
+        RamShareName: !Ref RamShareName 
+        RamPrincipals: !Join [ ",", !Ref RamPrincipals ] 
+        
+        # 👇 One string, unlimited attachments (mix raw IDs + SSM) 
+        VpcAttachmentsJson: | 
+          [ 
+            { 
+              "Name": "app-a", 
+              "AssociateWithRt": "spoke", 
+              "PropagateToRt": "core", 
+              "VpcIdParam": "vpc-0ca2e373d8f3f78fc", 
+              "SubnetIdsParam": "subnet-05dae123bbce38a09"
+            }, 
+            { 
+              "Name": "shared-svcs", 
+              "AssociateWithRt": "core", 
+              "PropagateToRt": "spoke", 
+              "VpcIdParam": "vpc-0d68d2e8f175ff319", 
+              "SubnetIdsParam": "subnet-0ea15c2cba1ec2b26"
+            } 
+          ] 
+      Tags:
+        - Key: Domain
+          Value: !Ref Domain 
+        - Key: Division 
+          Value: !Ref Division 
+        - Key: Program 
+          Value: !Ref Program 
+        - Key: Team 
+          Value: !Ref Team
+    
+    
+
