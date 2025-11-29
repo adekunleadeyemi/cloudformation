@@ -1,159 +1,154 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Parent Stack
+
 Parameters:
-  # Transit Gateway parameters
   TransitGatewayName:
     Type: String
+    Default: 'test'
 
   AmazonSideAsn:
     Type: Number
     Default: 64512
-  
+
   AutoAcceptSharedAttachments:
     Type: String
-    AllowedValues: 
-      - "true"
-      - "false"
-    Default: "true"
-  
+    AllowedValues: ["enable", "disable"]
+    Default: "enable"
+
   DefaultRouteTableAssociation:
     Type: String
-    AllowedValues: 
-      - "true"
-      - "false"
-    Default: "true"
-  
+    AllowedValues: ["enable", "disable"]
+    Default: "disable"
+
   DefaultRouteTablePropagation:
     Type: String
-    AllowedValues: 
-      - "true"
-      - "false"
-    Default: "true"
-  
+    AllowedValues: ["enable", "disable"]
+    Default: "disable"
+
   DnsSupport:
     Type: String
-    AllowedValues: 
-      - "true"
-      - "false"
-    Default: "true"
-  
+    AllowedValues: ["enable", "disable"]
+    Default: "enable"
+
   VpnEcmpSupport:
     Type: String
-    AllowedValues: 
-      - "true"
-      - "false"
-    Default: "false"
-  
+    AllowedValues: ["enable", "disable"]
+    Default: "disable"
+
   MulticastSupport:
     Type: String
-    AllowedValues: 
-      - "true"
-      - "false"
-    Default: "false"
-  
+    AllowedValues: ["enable", "disable"]
+    Default: "disable"
+
   CoreRtName:
     Type: String
     Default: core
-  
+
   SpokeRtName:
     Type: String
     Default: spoke
-  
-  VpcAttachmentsJson:
-    Type: String
-    Default: '[]'
-    
+
   EnableRamShare:
     Type: String
-    AllowedValues: 
-      - "true"
-      - "false"
+    AllowedValues: ["true", "false"]
     Default: "false"
-  
+
   RamShareName:
     Type: String
     Default: 'tgw-share'
-  
+
   RamPrincipals:
     Type: CommaDelimitedList
-    Default: ''
-  
-  # tags
+    Default: '111111111111,222222222222'
 
+  # Tags
   Domain:
     Type: String
     Default: 'test'
-  
+
   Division:
     Type: String
     Default: ade
-  
+
   Program:
     Type: String
     Default: testing
-  
+
   Team:
     Type: String
     Default: sre
-  
+
   Environment:
     Type: String
     Default: dev
 
-  
 Conditions:
-  HasNameOverride: !Not [!Equals [!Ref TransitGatewayName, '']]
+  HasNameOverride: !Not [!Equals [!Ref TransitGatewayName, ""]]
 
 Resources:
-  TransitGatewayStack: 
+  TransitGatewayNested:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: "https://cloudformation-module-template.s3.eu-west-2.amazonaws.com/infrastructure-templates/modules/transit-gateway/transit-gateway-template.yaml" 
-      Parameters: 
+      TemplateURL: "https://cloudformation-module-template.s3.eu-west-2.amazonaws.com/infrastructure-templates/modules/transit-gateway/transit-gateway-template.yaml"
+
+      Parameters:
+        # Core TGW parameters (must match child template parameter names)
         TransitGatewayName: !If
           - HasNameOverride
           - !Ref TransitGatewayName
-          - !Sub ${Environment}-transit-gateway 
-        AmazonSideAsn: !Ref AmazonSideAsn 
-        AutoAcceptSharedAttachments: !Ref AutoAcceptSharedAttachments 
-        DefaultRouteTableAssociation: !Ref DefaultRouteTableAssociation 
-        DefaultRouteTablePropagation: !Ref DefaultRouteTablePropagation 
-        DnsSupport: !Ref DnsSupport 
-        VpnEcmpSupport: !Ref VpnEcmpSupport 
-        MulticastSupport: !Ref MulticastSupport 
-        CoreRtName: !Ref CoreRtName 
-        SpokeRtName: !Ref SpokeRtName 
-        EnableRamShare: !Ref EnableRamShare 
-        RamShareName: !Ref RamShareName 
-        RamPrincipals: !Join [ ",", !Ref RamPrincipals ] 
-        
-        # 👇 One string, unlimited attachments (mix raw IDs + SSM) 
-        VpcAttachmentsJson: | 
-          [ 
-            { 
-              "Name": "app-a", 
-              "AssociateWithRt": "spoke", 
-              "PropagateToRt": "core", 
-              "VpcIdParam": "vpc-0ca2e373d8f3f78fc", 
-              "SubnetIdsParam": "subnet-05dae123bbce38a09"
-            }, 
-            { 
-              "Name": "shared-svcs", 
-              "AssociateWithRt": "core", 
-              "PropagateToRt": "spoke", 
-              "VpcIdParam": "vpc-0d68d2e8f175ff319", 
-              "SubnetIdsParam": "subnet-0ea15c2cba1ec2b26"
-            } 
-          ] 
-      Tags:
-        - Key: Domain
-          Value: !Ref Domain 
-        - Key: Division 
-          Value: !Ref Division 
-        - Key: Program 
-          Value: !Ref Program 
-        - Key: Team 
-          Value: !Ref Team
-    
-    
+          - !Sub "${Environment}-transit-gateway"
+        AmazonSideAsn: !Ref AmazonSideAsn
+        AutoAcceptSharedAttachments: !Ref AutoAcceptSharedAttachments
+        DefaultRouteTableAssociation: !Ref DefaultRouteTableAssociation
+        DefaultRouteTablePropagation: !Ref DefaultRouteTablePropagation
+        DnsSupport: !Ref DnsSupport
+        VpnEcmpSupport: !Ref VpnEcmpSupport
+        MulticastSupport: !Ref MulticastSupport
+        CoreRtName: !Ref CoreRtName
+        SpokeRtName: !Ref SpokeRtName
 
+        # RAM share
+        EnableRamShare: !Ref EnableRamShare
+        RamShareName: !Ref RamShareName
+        RamPrincipals: !Join [",", !Ref RamPrincipals]
+
+        # --- VPC ATTACHMENT 1 (REQUIRED) ---
+        Vpc1Name: "app-a"
+        Vpc1Id: "vpc-0ca2e373d8f3f78fc"
+        # For List<AWS::EC2::Subnet::Id> in child, pass comma-separated string
+        Vpc1SubnetIds: "subnet-05dae123bbce38a09"
+        Vpc1AssociateWithRt: "spoke"
+        Vpc1PropagateToRt: "core"
+
+        # --- VPC ATTACHMENT 2 (REQUIRED) ---
+        Vpc2Name: "shared-svcs"
+        Vpc2Id: "vpc-0d68d2e8f175ff319"
+        Vpc2SubnetIds: "subnet-0ea15c2cba1ec2b26"
+        Vpc2AssociateWithRt: "core"
+        Vpc2PropagateToRt: "spoke"
+
+
+        # # --- VPC ATTACHMENT 3 (Optional) ---
+        # Vpc3Enabled: "false"
+        # Vpc3Name: ""
+        # Vpc3Id: ""
+        # Vpc3SubnetIds: ""
+        # Vpc3AssociateWithRt: "core"
+        # Vpc3PropagateToRt: "spoke"
+
+
+        # Tags
+        Domain: !Ref Domain
+        Division: !Ref Division
+        Program: !Ref Program
+        Team: !Ref Team
+
+Outputs:
+  TransitGatewayId:
+    Value: !GetAtt TransitGatewayNested.Outputs.TransitGatewayId
+
+  CoreRouteTableId:
+    Value: !GetAtt TransitGatewayNested.Outputs.CoreRouteTableId
+
+  SpokeRouteTableId:
+    Value: !GetAtt TransitGatewayNested.Outputs.SpokeRouteTableId
