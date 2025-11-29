@@ -4,11 +4,9 @@ Description: Parent Stack
 Parameters:
   TransitGatewayName:
     Type: String
-    Default: 'test'
 
   AmazonSideAsn:
     Type: Number
-    Default: 64512
 
   AutoAcceptSharedAttachments:
     Type: String
@@ -55,7 +53,6 @@ Parameters:
 
   RamShareName:
     Type: String
-    Default: 'tgw-share'
 
   RamPrincipals:
     Type: CommaDelimitedList
@@ -126,16 +123,6 @@ Resources:
         Vpc2SubnetIds: "subnet-0ea15c2cba1ec2b26"
         Vpc2AssociateWithRt: "core"
         Vpc2PropagateToRt: "spoke"
-
-
-        # # --- VPC ATTACHMENT 3 (Optional) ---
-        # Vpc3Enabled: "false"
-        # Vpc3Name: ""
-        # Vpc3Id: ""
-        # Vpc3SubnetIds: ""
-        # Vpc3AssociateWithRt: "core"
-        # Vpc3PropagateToRt: "spoke"
-
 
         # Tags
         Domain: !Ref Domain

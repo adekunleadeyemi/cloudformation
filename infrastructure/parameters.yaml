@@ -3,23 +3,21 @@
 - ParameterKey: AmazonSideAsn 
   ParameterValue: "64512" 
 - ParameterKey: AutoAcceptSharedAttachments 
-  ParameterValue: "true" 
+  ParameterValue: "enable" 
 - ParameterKey: DefaultRouteTableAssociation 
-  ParameterValue: "true" 
+  ParameterValue: "disable" 
 - ParameterKey: DefaultRouteTablePropagation 
-  ParameterValue: "true" 
+  ParameterValue: "disable" 
 - ParameterKey: DnsSupport 
-  ParameterValue: "true" 
+  ParameterValue: "enable" 
 - ParameterKey: VpnEcmpSupport 
-  ParameterValue: "true" 
+  ParameterValue: "disable" 
 - ParameterKey: MulticastSupport 
-  ParameterValue: "false" 
+  ParameterValue: "disable" 
 - ParameterKey: CoreRtName 
   ParameterValue: "core" 
 - ParameterKey: SpokeRtName 
   ParameterValue: "spoke" 
-- ParameterKey: VpcAttachmentsJson 
-  ParameterValue: "${VpcAttachmentsJson}" 
 - ParameterKey: EnableRamShare 
   ParameterValue: "false" 
 - ParameterKey: RamShareName 

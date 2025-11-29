@@ -1,0 +1,14 @@
+[
+    {
+        "ParameterKey": "TransitGatewayName",
+        "ParameterValue": "dx-vpc-non-prod-sandbox-tgw"
+    },
+    {
+        "ParameterKey": "AmazonSideAsn",
+        "ParameterValue": "64512"
+    },
+    {
+        "ParameterKey": "RamShareName",
+        "ParameterValue": "tgw-share"
+    }
+]
