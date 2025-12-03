@@ -4,38 +4,52 @@ Description: Parent Stack
 Parameters:
   TransitGatewayName:
     Type: String
+    Default: "dx-vpc-non-prod-sandbox-tgw"
 
   AmazonSideAsn:
     Type: Number
+    Default: '64512'
 
   AutoAcceptSharedAttachments:
     Type: String
-    AllowedValues: ["enable", "disable"]
-    Default: "enable"
+    AllowedValues: 
+      - enable
+      - disable
+    Default: enable
 
   DefaultRouteTableAssociation:
     Type: String
-    AllowedValues: ["enable", "disable"]
+    AllowedValues: 
+      - "enable"
+      - "disable"
     Default: "disable"
 
   DefaultRouteTablePropagation:
     Type: String
-    AllowedValues: ["enable", "disable"]
+    AllowedValues: 
+      - "enable"
+      - "disable"
     Default: "disable"
 
   DnsSupport:
     Type: String
-    AllowedValues: ["enable", "disable"]
+    AllowedValues: 
+      - "enable"
+      - "disable"
     Default: "enable"
 
   VpnEcmpSupport:
     Type: String
-    AllowedValues: ["enable", "disable"]
+    AllowedValues: 
+      - "enable"
+      - "disable"
     Default: "disable"
 
   MulticastSupport:
     Type: String
-    AllowedValues: ["enable", "disable"]
+    AllowedValues: 
+      - "enable"
+      - "disable"
     Default: "disable"
 
   CoreRtName:
@@ -48,11 +62,14 @@ Parameters:
 
   EnableRamShare:
     Type: String
-    AllowedValues: ["true", "false"]
-    Default: "false"
+    AllowedValues: 
+      - "enable"
+      - "disable"
+    Default: "disable"
 
   RamShareName:
     Type: String
+    Default: "tgw-share"
 
   RamPrincipals:
     Type: CommaDelimitedList
@@ -110,19 +127,26 @@ Resources:
         RamPrincipals: !Join [",", !Ref RamPrincipals]
 
         # --- VPC ATTACHMENT 1 (REQUIRED) ---
-        Vpc1Name: "app-a"
+        Vpc1Name: "shared-svcs"
         Vpc1Id: "vpc-0ca2e373d8f3f78fc"
-        # For List<AWS::EC2::Subnet::Id> in child, pass comma-separated string
         Vpc1SubnetIds: "subnet-05dae123bbce38a09"
-        Vpc1AssociateWithRt: "spoke"
-        Vpc1PropagateToRt: "core"
+        Vpc1AssociateWithRt: "core"
+        Vpc1PropagateToRt: "spoke"
 
         # --- VPC ATTACHMENT 2 (REQUIRED) ---
-        Vpc2Name: "shared-svcs"
+        Vpc2Name: "app-a"
         Vpc2Id: "vpc-0d68d2e8f175ff319"
         Vpc2SubnetIds: "subnet-0ea15c2cba1ec2b26"
-        Vpc2AssociateWithRt: "core"
-        Vpc2PropagateToRt: "spoke"
+        Vpc2AssociateWithRt: "spoke"
+        Vpc2PropagateToRt: "core"
+
+        # --- VPC ATTACHMENT 3 (optional) ---
+        Vpc3Enabled: "true"
+        Vpc3Name: "app-b"
+        Vpc3Id: "vpc-0ddd4844146677bec"
+        Vpc3SubnetIds: "subnet-06426201bd95c0e23"
+        Vpc3AssociateWithRt: "spoke"
+        Vpc3PropagateToRt: "core"
 
         # Tags
         Domain: !Ref Domain
